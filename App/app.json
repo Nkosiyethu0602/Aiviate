@@ -64,7 +64,10 @@
         {
           "fonts": []
         }
-      ]
+      ],
+      "expo-status-bar",
+      "expo-image",
+      "expo-video"
     ]
   }
 }

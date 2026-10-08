@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import AppTabBar from '../components/AppTabBar';
+import LandingScreen from '../screens/LandingScreen'; // Integrated Landing/Onboarding Screen
 import JobsScreen from '../screens/JobsScreen';
 import ActiveJobScreen from '../screens/ActiveJobScreen';
 import EarningsScreen from '../screens/EarningsScreen';
@@ -23,9 +24,7 @@ import { COLORS } from '../theme';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Deep-link mapping. The onboarding email link (aviate://activate?token=...)
-// routes to the Activate screen even before the driver is signed in. A web
-// https fallback is included for universal/app links when configured.
+// Deep-link mapping including Onboarding/Landing path
 const linking = {
   prefixes: [
     `${APP_SCHEME}://`,
@@ -33,6 +32,7 @@ const linking = {
   ],
   config: {
     screens: {
+      Landing: 'welcome',
       Login: 'login',
       Activate: 'activate',
       ForgotPassword: 'forgot-password',
@@ -57,7 +57,15 @@ function MainTabs() {
 
 function AuthStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Landing">
+        {(props) => (
+          <LandingScreen
+            {...props}
+            onFinish={() => props.navigation.navigate('Login')}
+          />
+        )}
+      </Stack.Screen>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Activate" component={ActivateScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
