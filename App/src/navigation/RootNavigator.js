@@ -15,6 +15,7 @@ import LoginScreen from '../screens/LoginScreen';
 import ActivateScreen from '../screens/ActivateScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import SuspendedScreen from '../screens/SuspendedScreen';
+import LandingScreen from '../screens/LandingPagescreen';
 import LogoMark from '../components/LogoMark';
 import { useAuth } from '../contexts/AuthContext';
 import { APP_SCHEME } from '../config';
@@ -33,6 +34,7 @@ const linking = {
   ],
   config: {
     screens: {
+      Landing: 'landing',
       Login: 'login',
       Activate: 'activate',
       ForgotPassword: 'forgot-password',
@@ -58,6 +60,7 @@ function MainTabs() {
 function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Landing" component={LandingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Activate" component={ActivateScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
