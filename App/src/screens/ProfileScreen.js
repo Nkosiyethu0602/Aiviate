@@ -15,6 +15,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { useDriver } from '../contexts/DriverContext';
 import { COLORS } from '../theme';
 
+// Hard-coded profile stats. Change these numbers to whatever you like.
+const STATS = {
+  rating: 4.8,
+  routes: 7,
+  stops: 37,
+  km: 140.4,
+};
+
 const Row = ({ icon, label, value }) => (
   <View style={styles.row}>
     <View style={styles.rowIcon}>
@@ -57,22 +65,22 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.empId}>{driver.employee_id}</Text>
           <View style={styles.ratingRow}>
             <Ionicons name="star" size={14} color="#FFB300" />
-            <Text style={styles.rating}>{driver.rating.toFixed(1)}</Text>
+            <Text style={styles.rating}>{STATS.rating.toFixed(1)}</Text>
             <Text style={styles.ratingDim}>· driver rating</Text>
           </View>
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{driver.completed_routes}</Text>
+            <Text style={styles.statValue}>{STATS.routes.toLocaleString()}</Text>
             <Text style={styles.statLabel}>Routes</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{driver.total_stops.toLocaleString()}</Text>
+            <Text style={styles.statValue}>{STATS.stops.toLocaleString()}</Text>
             <Text style={styles.statLabel}>Stops</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{driver.total_km.toLocaleString()}</Text>
+            <Text style={styles.statValue}>{STATS.km.toLocaleString()}</Text>
             <Text style={styles.statLabel}>km</Text>
           </View>
         </View>

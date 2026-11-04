@@ -9,7 +9,6 @@ import {
   Animated,
   Easing,
   Platform,
-  Pressable,
 } from 'react-native';
 
 const USE_NATIVE = Platform.OS !== 'web';
@@ -59,6 +58,21 @@ const stripDatePrefix = (date) => {
     .replace(/^\d+\s+days?\s+ago(\s·\s|\s*)/i, '')
     .trim();
   return cleaned;
+};
+
+// Determine route performance badge based on aggregate math (Distance, Duration, Stops)
+const getRouteBadge = (distanceKm, durationMin, stops) => {
+  const hours = durationMin / 60;
+  const avgSpeed = hours > 0 ? distanceKm / hours : 0;
+  const timePerStop = stops > 0 ? durationMin / stops : 0;
+
+  if (stops >= 4 && timePerStop <= 12) {
+    return { label: '🏆 Precision Parking', color: '#b45309', bg: '#fef3c7' };
+  } else if (avgSpeed > 35 && durationMin < 45) {
+    return { label: '⚡ Speedy Dispatch', color: '#0d9488', bg: '#ccfbf1' };
+  } else {
+    return { label: '🌿 EcoCruiser', color: '#16a34a', bg: '#dcfce7' };
+  }
 };
 
 export default function HistoryScreen() {
@@ -216,20 +230,25 @@ function WeekRow({ label, value, fraction = 0 }) {
 function HistoryRow({ item, hideDay }) {
   const stripped = hideDay ? stripDatePrefix(item.date) : item.date;
   const meta = stripped ? `${stripped} · ${item.stops} stops` : `${item.stops} stops`;
-  // No detail screen exists yet, so render as a non-interactive list item.
-  // Avoids the "looks tappable but does nothing" accessibility footgun.
+  const badge = getRouteBadge(item.distance_km, item.duration_min, item.stops);
+
   return (
     <View
       accessible
       accessibilityRole="summary"
-      accessibilityLabel={`${item.id}, ${meta}, ${item.distance_km} kilometres, ${formatDuration(item.duration_min)}`}
+      accessibilityLabel={`${item.id}, ${meta}, ${item.distance_km} kilometres, ${formatDuration(item.duration_min)}, Achievement: ${badge.label}`}
       style={styles.row}
     >
       <View style={styles.rowIcon}>
         <Ionicons name="checkmark" size={15} color={COLORS.textDim} />
       </View>
       <View style={styles.rowMain}>
-        <Text style={styles.rowTitle}>{item.id}</Text>
+        <View style={styles.rowTitleRow}>
+          <Text style={styles.rowTitle}>{item.id}</Text>
+          <View style={[styles.badgeContainer, { backgroundColor: badge.bg }]}>
+            <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
+          </View>
+        </View>
         <Text style={styles.rowMeta}>{meta}</Text>
       </View>
       <View style={styles.rowRight}>
@@ -321,14 +340,28 @@ const styles = StyleSheet.create({
     gap: 12,
     backgroundColor: COLORS.surface,
   },
-  rowPressed: { backgroundColor: 'rgba(15,42,61,0.04)' },
   rowIcon: {
     width: 28, height: 28, borderRadius: 14,
     backgroundColor: COLORS.fill,
     alignItems: 'center', justifyContent: 'center',
   },
   rowMain: { flex: 1 },
+  rowTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
   rowTitle: { fontSize: 15, fontWeight: '600', color: COLORS.text, letterSpacing: -0.1 },
+  badgeContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
   rowMeta: { fontSize: 12, color: COLORS.textDim, marginTop: 2 },
   rowRight: { alignItems: 'flex-end' },
   rowValue: { fontSize: 14, fontWeight: '700', color: COLORS.text },
