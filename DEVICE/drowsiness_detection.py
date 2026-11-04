@@ -18,7 +18,7 @@ from flask import Flask, jsonify
 # ====================================================
 # CONFIGURATION
 # ====================================================
-ESP32_IP = "192.168.137.134"
+ESP32_IP = "192.168.137.198"
 STREAM_URL = f"http://{ESP32_IP}:81/stream"
 ALARM_ON_URL = f"http://{ESP32_IP}/control?var=alarm&val=1"
 ALARM_OFF_URL = f"http://{ESP32_IP}/control?var=alarm&val=0"
