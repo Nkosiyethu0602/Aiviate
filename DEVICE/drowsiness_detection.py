@@ -23,9 +23,9 @@ STREAM_URL = f"http://{ESP32_IP}:81/stream"
 ALARM_ON_URL = f"http://{ESP32_IP}/control?var=alarm&val=1"
 ALARM_OFF_URL = f"http://{ESP32_IP}/control?var=alarm&val=0"
 
-# Detection Thresholds
-EAR_THRESHOLD = 0.21        # Eye Aspect Ratio threshold (below = closed)
-EYE_CLOSED_FRAMES = 10      # Frames eyes must remain closed (~0.5s)
+# Detection Thresholds (Tuned to ignore normal blinking)
+EAR_THRESHOLD = 0.19        # Lowered: only triggers when eyes are deeply closed
+EYE_CLOSED_FRAMES = 20      # Increased: eyes must stay closed for ~1-1.5 seconds to flag drowsiness
 MAR_THRESHOLD = 0.65        # Mouth Aspect Ratio threshold (above = yawn)
 
 # Map Redirection Cooldown (seconds)
@@ -35,7 +35,7 @@ last_map_redirect_time = 0
 # Landmark Indices
 LEFT_EYE = [33, 160, 158, 133, 153, 144]
 RIGHT_EYE = [362, 385, 387, 263, 373, 380]
-MOUTH = [61, 13, 291, 14]
+MOUTH = [61, 291, 39, 181, 0, 17] # 6-point mouth indices for accurate yawn detection
 
 http_session = requests.Session()
 
@@ -130,11 +130,11 @@ class RobustMJPEGStream:
     def stop(self):
         self.running = False
 
-# MediaPipe Initialization
+# MediaPipe Initialization (refine_landmarks=True required for precise lip tracking)
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
     max_num_faces=1,
-    refine_landmarks=False,
+    refine_landmarks=True,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
@@ -184,9 +184,10 @@ def calculate_ear(landmarks, eye_indices, img_w, img_h):
 
 def calculate_mar(landmarks, mouth_indices, img_w, img_h):
     pts = np.array([(landmarks[idx].x * img_w, landmarks[idx].y * img_h) for idx in mouth_indices])
-    v = distance(pts[1], pts[3])
-    h = distance(pts[0], pts[2])
-    return v / h
+    v1 = distance(pts[2], pts[3])
+    v2 = distance(pts[4], pts[5])
+    h = distance(pts[0], pts[1])
+    return (v1 + v2) / (2.0 * h)
 
 # State Variables
 closed_counter = 0
